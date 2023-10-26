@@ -1,0 +1,15 @@
+table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  table th, table td {
+    padding: 8px 12px;
+    text-align: left;
+    border: 1px solid #ccc;
+  }
+  
+  /* Set equal width for all table cells */
+  table th, table td {
+    width: 16.66%; /* 100% divided by the number of columns (6 in this case) */
+  }

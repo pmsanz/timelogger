@@ -1,0 +1,59 @@
+.task-view {
+    padding: 20px;
+  }
+  
+  .task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .task-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #ddd;
+    padding: 10px;
+  }
+
+/* Define styles for the task-header div */
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f0f0f0;
+  font-weight: bold;
+  padding: 10px;
+}
+
+/* Define styles for individual divs inside task-header */
+.task-header div {
+  flex: 1;
+  padding: 5px;
+  text-align: center;
+  border: 1px solid #ccc;
+}
+
+/* Add some margin to the first and last div to separate them from the edges */
+.task-header div:first-child {
+  margin-left: 5px;
+}
+
+.task-header div:last-child {
+  margin-right: 5px;
+}
+
+.add{
+  
+    margin-top: 10px;
+  
+}
+  
+  button {
+    padding: 5px 10px;
+    margin-left: 0px;
+  }
+
+.error-message{
+  color: red;
+}
