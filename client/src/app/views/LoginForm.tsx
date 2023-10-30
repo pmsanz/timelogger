@@ -1,49 +1,70 @@
-import React from 'react';
-import './LoginForm.css';
+import React, { FC, SyntheticEvent, useState } from "react";
 
-interface LoginViewState {
-    username: string;
-    password: string;
-}
+type LoginViewState = {
+  username: string;
+  password: string;
+};
 
-class LoginForm extends React.Component<{}, LoginViewState> {
-    constructor(props: {}) {
-        super(props);
-        this.state = {
-            username: '',
-            password: ''
-        };
-    }
+const LoginForm: FC = () => {
+  const [{ username, password }, setLoginState] = useState<LoginViewState>({
+    username: "",
+    password: "",
+  });
 
-    handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = event.target;
-        this.setState({
-            [name]: value
-        } as Pick<LoginViewState, keyof LoginViewState>);
-    }
+  const handleSubmit = (e: SyntheticEvent) => {
+    e.preventDefault();
+    const target = e.target as typeof e.target & {
+      username: { value: string };
+      password: { value: string };
+    };
+    const username = target.username.value;
+    const password = target.password.value;
+    console.log({ username, password });
+    setLoginState({ username, password });
+  };
 
-    handleSubmit = () => {
-        // Handle the submission logic here
-        console.log(this.state);
-    }
+  return (
+    <div className="container mx-auto flex flex-col justify-center items-center">
+      <h1 className="text-2xl font-medium my-10">Welcome back!</h1>
+      <div className="paper">
+        <form
+          className="flex flex-col w-80 m-12 space-y-8"
+          onSubmit={(e) => handleSubmit(e)}
+        >
+          <div className="input-group">
+            <label className="label">User</label>
+            <input
+              type="text"
+              name="username"
+              defaultValue={username}
+              className="input-field form-input"
+              autoComplete={"on"}
+            />
+          </div>
+          <div className="input-group">
+            <label className="label">Password</label>
+            <input
+              type="password"
+              name="password"
+              className="input-field form-input"
+              defaultValue={password}
+              autoComplete={"on"}
+            />
+          </div>
+          <button className="btn-primary" type="submit">
+            Login
+          </button>
 
-    render() {
-        return (
-            <div className="login-container">
-                <h2>Welcome back!</h2>
-                <div className="login-box">
-                    <label>User:</label>
-                    <input type="text" name="username" value={this.state.username} onChange={this.handleInputChange} />
-
-                    <label>Password:</label>
-                    <input type="password" name="password" value={this.state.password} onChange={this.handleInputChange} />
-
-                    <button onClick={this.handleSubmit}>Login</button>
-                    <p><a href="#">Forgot password?</a></p>
-                </div>
-            </div>
-        );
-    }
-}
+          <a
+            href="#"
+            className="font-medium text-sm text-blue-700 hover:text-blue-500"
+          >
+            Forgot password?
+          </a>
+        </form>
+      </div>
+    </div>
+  );
+};
 
 export default LoginForm;
