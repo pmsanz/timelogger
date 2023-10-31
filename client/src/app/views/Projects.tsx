@@ -78,7 +78,7 @@ export default function Projects() {
     }
   };
 
-  const handleButtonClick = (
+  const openEditProject = (
     event: MouseEvent<HTMLButtonElement>,
     projectId: number
   ) => {
@@ -86,7 +86,7 @@ export default function Projects() {
     navigate(`/edit/${projectId}`);
   };
 
-  const handleProjectNameClick = (projectId: number) => {
+  const oepnTaskView = (projectId: number) => {
     navigate(`/taskView/${projectId}`);
   };
 
@@ -111,8 +111,8 @@ export default function Projects() {
   ];
 
   const actions: TableActionsType = {
-    clickRowCallback: handleProjectNameClick,
-    modifyCallback: handleButtonClick,
+    clickRowCallback: oepnTaskView,
+    modifyCallback: openEditProject,
     deleteCallback: handleDelete,
   };
 
