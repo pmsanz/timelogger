@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .btn-primary {
+    @apply text-center items-center justify-center rounded-lg text-sm px-3 py-2 font-medium inline-flex space-x-2 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300;
+  }
+  .input-group {
+    @apply flex flex-col space-y-2;
+  }
+  .input-field {
+    @apply text-sm py-2 rounded border border-gray-300;
+  }
+  .label {
+    @apply font-medium text-sm;
+  }
+  .paper {
+    @apply rounded-lg border shadow-md bg-white border-gray-200;
+  }
+  .nav-item {
+    @apply block py-2 text-sm font-medium text-gray-900 lg:px-3 lg:py-0 hover:text-blue-600;
+  }
+  .table-th {
+    @apply border-slate-300 px-6 py-3;
+  }
+  .table-td {
+    @apply px-6 py-4;
+  }
+}

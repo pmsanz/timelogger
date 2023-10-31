@@ -1,112 +1,114 @@
-import React, { useState, useEffect } from 'react';
-import { Project } from '../types/project'; // Update the import path
-import { Status } from '../types/status'; // Update the import path
-import { createProject, updateProject, fetchProjectById } from '../api/projects'; // Adjust the path
-import { useParams } from 'react-router-dom';
-import { fetchProjectStatus } from '../api/status';
+import React from "react";
+import { createProject, updateProject } from "../api/projects"; // Adjust the path
+import { useParams } from "react-router-dom";
+import { useGetProjectById } from "../hooks/useGetProjectById";
+import { useGetProjectStatus } from "../hooks/useGetProjectStatus";
 
-// Inside ProjectForm component:
+const ProjectForm: React.FC = () => {
+  const { projectId } = useParams<{ projectId: string }>();
 
-interface ProjectProps {
-    projectIdCasted?: number; // Use this to determine if we're editing or creating a new project
-}
+  const { status } = useGetProjectStatus();
 
-const ProjectForm: React.FC<ProjectProps> = () => {
-    
-    const [project, setProject] = useState<Project | null>(null);
+  const { loadingProject, project, updateProjectState } =
+    useGetProjectById(projectId);
 
-    const [status, setStatus] = useState<Status[]>([]);
-
-    const [loading, setLoading] = useState<boolean>(false);
-
-    const { projectId } = useParams<{ projectId: string }>();
-    const projectIdCasted = Number(projectId);
-
-    useEffect(() => {
-        async function loadStatus() {
-          const data = await fetchProjectStatus();
-          setStatus(data);
-        }
-        loadStatus();
-      }, []);
-
-    useEffect(() => {
-        if (projectIdCasted) {
-            setLoading(true);
-            fetchProjectById(projectIdCasted).then(data => {
-                setProject(data);
-                setLoading(false);
-            });
-        }
-    }, [projectIdCasted]);
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (project) {
-            if (project.id) {
-                await updateProject(project.id, project);
-            } else {
-                await createProject(project);
-            }
-        }
-    };
-
-    const formatDateInputValue = (date: Date | undefined): string => {
-        if (date instanceof Date) {
-            return date.toISOString().split('T')[0];
-        }
-        return '';
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (project) {
+      if (project.id) {
+        await updateProject(project.id, project);
+      } else {
+        await createProject(project);
+      }
     }
+  };
 
-    if (loading) return <div>Loading...</div>;
+  const formatDateInputValue = (date: Date | undefined): string => {
+    if (date instanceof Date) {
+      return date.toISOString().split("T")[0];
+    }
+    return "";
+  };
 
-    return (
-        <form onSubmit={handleSubmit}>
-            <div>
-                <label>Name:</label>
-                <input 
-                    value={project?.name || ''} 
-                    onChange={e => setProject(prev => ({ ...prev!, name: e.target.value }))} 
-                />
-            </div>
-            <div>
-                <label>Description:</label>
-                <textarea 
-                    value={project?.description || ''} 
-                    onChange={e => setProject(prev => ({ ...prev!, description: e.target.value }))} 
-                />
-            </div>
-            <div>
-                <label>Status:</label>
-                
-                
-                <select 
-                    value={project?.projectStatusId || 0} 
-                    onChange={e => setProject(prev => ({ ...prev!, status: Number(e.target.value) }))}>
-                       {status.map(status => (
-                            <option key={status.id} value={status.id}>{status.name}</option>
-                        ))}
-                </select>
-            </div>
-            <div>
-                <label>Start Date:</label>
-                <input 
-                    type="date" 
-                    value={project ? formatDateInputValue(project.startDate) : formatDateInputValue(new Date())}
-                    onChange={e => setProject(prev => ({ ...prev!, startDate: new Date(e.target.value) }))}
-                />
-            </div>
-            <div>
-                <label>End Date:</label>
-                <input 
-                    type="date" 
-                    value={project ? formatDateInputValue(project.endDate) : formatDateInputValue(new Date(new Date().setMonth(new Date().getMonth() + 6)))}
-                    onChange={e => setProject(prev => ({ ...prev!, endDate: new Date(e.target.value) }))}
-                />
-            </div>
-            <button type="submit">{projectIdCasted ? 'Update' : 'Create'}</button>
+  if (loadingProject) return <div>Loading project...</div>;
+
+  return (
+    <div className="container mx-auto flex flex-col justify-center items-center">
+      <div className="paper mt-8">
+        <form
+          className="flex flex-col w-[600px] m-12 space-y-8 mt-8"
+          onSubmit={handleSubmit}
+        >
+          <div className="input-group">
+            <label className="label">Name</label>
+            <input
+              className="input-field form-input"
+              value={project?.name || ""}
+              onChange={(e) => updateProjectState("name", e.target.value)}
+            />
+          </div>
+          <div className="input-group">
+            <label className="label">Description</label>
+            <textarea
+              className="input-field form-textarea"
+              value={project?.description || ""}
+              onChange={(e) =>
+                updateProjectState("description", e.target.value)
+              }
+            />
+          </div>
+          <div className="input-group">
+            <label className="label">Status</label>
+
+            <select
+              className="input-field form-multiselect"
+              value={project?.projectStatusId || 0}
+              onChange={(e) =>
+                updateProjectState("projectStatusId", e.target.value)
+              }
+            >
+              {status.map((status) => (
+                <option key={status.id} value={status.id}>
+                  {status.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="input-group">
+            <label>Start Date</label>
+            <input
+              className="input-field form-input"
+              type="date"
+              value={
+                project
+                  ? formatDateInputValue(project.startDate)
+                  : formatDateInputValue(new Date())
+              }
+              onChange={(e) => updateProjectState("startDate", e.target.value)}
+            />
+          </div>
+          <div className="input-group">
+            <label className="label">End Date</label>
+            <input
+              className="input-field form-input"
+              type="date"
+              value={
+                project
+                  ? formatDateInputValue(project.endDate)
+                  : formatDateInputValue(
+                      new Date(new Date().setMonth(new Date().getMonth() + 6))
+                    )
+              }
+              onChange={(e) => updateProjectState("endDate", e.target.value)}
+            />
+          </div>
+          <button className="btn-primary" type="submit">
+            {project?.id ? "Update" : "Create"}
+          </button>
         </form>
-    );
+      </div>
+    </div>
+  );
 };
 
 export default ProjectForm;

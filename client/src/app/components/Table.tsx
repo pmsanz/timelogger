@@ -1,16 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { Project, ProjectStatus } from '../types/project'; // Update the import path
-import { Status } from '../types/status'; // Update the import path
-import {  fetchProjects, deleteProject  } from '../api/projects';
-import {  fetchProjectStatusById  } from '../api/status';
-import { useNavigate  } from 'react-router-dom';
-import './Table.css';
-
+import React, { MouseEvent, useEffect, useState } from "react";
+import { Project, ProjectStatus } from "../types/project"; // Update the import path
+import { Status } from "../types/status"; // Update the import path
+import { fetchProjects, deleteProject } from "../api/projects";
+import { fetchProjectStatusById } from "../api/status";
+import { useNavigate } from "react-router-dom";
+import { GrDescend, GrAscend } from "react-icons/gr";
 
 const Table: React.FC = () => {
-    
-    const [projects, setProjects] = useState<ProjectStatus[]>([]);
-    const navigate = useNavigate();
+  const [projects, setProjects] = useState<ProjectStatus[]>([]);
+  const navigate = useNavigate();
 
   // Method to order projects by endDate
   const orderProjects = (asc: boolean) => {
@@ -29,18 +27,18 @@ const Table: React.FC = () => {
     setProjects(sortedProjects);
   };
 
-    useEffect(() => {
+  useEffect(() => {
+    async function loadData() {
+      const data = await fetchProjects();
+      const projectData: Project[] = data as Project[];
+      // console.log("projectData", projectData);
 
-      async function loadData() {
-        const data = await fetchProjects();
-        const projectData: Project[] = data as Project[];
-        console.log("projectData",projectData);
-
-        if(projectData.length > 0){
-
+      if (projectData.length > 0) {
         const projectStatusArray: ProjectStatus[] = await Promise.all(
           projectData.map(async (item) => {
-            const status : Status = await fetchProjectStatusById(item.projectStatusId);
+            const status: Status = await fetchProjectStatusById(
+              item.projectStatusId
+            );
             const projectStatus: ProjectStatus = {
               id: item.id,
               name: item.name,
@@ -54,61 +52,92 @@ const Table: React.FC = () => {
         );
         setProjects(projectStatusArray);
       }
-      }
-      loadData();
-    }, []);
-  
-    const handleDelete = async (id: number) => {
-      try {
-        await deleteProject(id);
-        // Refresh the projects after deletion
-        const updatedProjects = await fetchProjects();
-        
-        setProjects(updatedProjects);
-      } catch (error) {
-        console.error('Error deleting project:', error);
-      }
     }
-   
+    loadData();
+  }, []);
 
-    const handleButtonClick = (projectId: number) => {
-        navigate(`/edit/${projectId}`);
-      };
+  const handleDelete = async (
+    event: MouseEvent<HTMLButtonElement>,
+    id: number
+  ) => {
+    try {
+      event.stopPropagation();
+      await deleteProject(id);
+      // Refresh the projects after deletion
+      const updatedProjects = await fetchProjects();
 
-      const handleProjectNameClick = (projectId: number) => {
-        navigate(`/taskView/${projectId}`);
-      };
-  
-    return (
-      <table>
-        <thead>
+      setProjects(updatedProjects);
+    } catch (error) {
+      console.error("Error deleting project:", error);
+    }
+  };
+
+  const handleButtonClick = (
+    event: MouseEvent<HTMLButtonElement>,
+    projectId: number
+  ) => {
+    event.stopPropagation();
+    navigate(`/edit/${projectId}`);
+  };
+
+  const handleProjectNameClick = (projectId: number) => {
+    navigate(`/taskView/${projectId}`);
+  };
+
+  return (
+    <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
+      <table className="w-full text-sm text-left text-gray-500 ">
+        <thead className="text-xs text-gray-700 uppercase bg-gray-100">
           <tr>
-            <th>Name</th>
-            <th>State</th>
-            <th>Start Date</th>
-            <th>Deadline <button onClick={() => orderProjects(true)}>Asc</button><button onClick={() => orderProjects(false)}>Desc</button></th>
-            <th>Modify</th>
-            <th>Delete</th>
+            <th className="table-th">Name</th>
+            <th className="table-th">State</th>
+            <th className="table-th">Start Date</th>
+            <th className="table-th">
+              Deadline
+              <button className="ml-2" onClick={() => orderProjects(true)}>
+                <GrAscend />
+              </button>
+              <button className="ml-2" onClick={() => orderProjects(false)}>
+                <GrDescend />
+              </button>
+            </th>
+            <th className="table-th">Modify</th>
+            <th className="table-th">Delete</th>
           </tr>
         </thead>
         <tbody>
-          {projects.map(project => (
-            <tr key={project.id}>
-              <td onClick={() => handleProjectNameClick(project.id)}>{project.name}</td>
-              <td>{project.status.name}</td>
-              <td>{project.startDate}</td>
-              <td>{project.endDate}</td>
-              <td className='buttonClass'>
-              <button onClick={() => handleButtonClick(project.id)}>Modify</button>
+          {projects.map((project) => (
+            <tr
+              key={project.id}
+              className="bg-white border-b  hover:bg-gray-100"
+              onClick={() => handleProjectNameClick(project.id)}
+            >
+              <td className="table-td text-gray-700">{project.name}</td>
+              <td className="table-td">{project.status.name}</td>
+              <td className="table-td">{project.startDate}</td>
+              <td className="table-td">{project.endDate}</td>
+              <td className="table-td">
+                <button
+                  className="btn-primary"
+                  onClick={(e) => handleButtonClick(e, project.id)}
+                >
+                  Modify
+                </button>
               </td>
-              <td className='buttonClass'>
-                <button onClick={() => handleDelete(project.id)}>Delete</button>
+              <td className="table-td">
+                <button
+                  className="btn-primary"
+                  onClick={(e) => handleDelete(e, project.id)}
+                >
+                  Delete
+                </button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-    );
-  }
-  
-  export default  Table;
+    </div>
+  );
+};
+
+export default Table;
