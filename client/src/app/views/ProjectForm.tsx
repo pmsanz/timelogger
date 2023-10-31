@@ -3,6 +3,7 @@ import { createProject, updateProject } from "../api/projects"; // Adjust the pa
 import { useParams } from "react-router-dom";
 import { useGetProjectById } from "../hooks/useGetProjectById";
 import { useGetProjectStatus } from "../hooks/useGetProjectStatus";
+import Card from "../components/Card";
 
 const ProjectForm: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -34,9 +35,9 @@ const ProjectForm: React.FC = () => {
 
   return (
     <div className="container mx-auto flex flex-col justify-center items-center">
-      <div className="paper mt-8">
+      <Card title={"Editin Project"}>
         <form
-          className="flex flex-col w-[600px] m-12 space-y-8 mt-8"
+          className="flex flex-col w-[600px] m-12 space-y-8"
           onSubmit={handleSubmit}
         >
           <div className="input-group">
@@ -106,7 +107,7 @@ const ProjectForm: React.FC = () => {
             {project?.id ? "Update" : "Create"}
           </button>
         </form>
-      </div>
+      </Card>
     </div>
   );
 };

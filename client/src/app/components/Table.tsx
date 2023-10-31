@@ -1,133 +1,85 @@
-import React, { MouseEvent, useEffect, useState } from "react";
-import { Project, ProjectStatus } from "../types/project"; // Update the import path
-import { Status } from "../types/status"; // Update the import path
-import { fetchProjects, deleteProject } from "../api/projects";
-import { fetchProjectStatusById } from "../api/status";
-import { useNavigate } from "react-router-dom";
+import React, { FC } from "react";
+
 import { GrDescend, GrAscend } from "react-icons/gr";
+import { TableColumnType } from "../types/table-column";
+import { TableActionsType } from "../types/table-actions";
 
-const Table: React.FC = () => {
-  const [projects, setProjects] = useState<ProjectStatus[]>([]);
-  const navigate = useNavigate();
+type TableProps = {
+  columns: TableColumnType[];
+  data: any[];
+  rowKey: string;
+  actions: TableActionsType;
+};
 
-  // Method to order projects by endDate
-  const orderProjects = (asc: boolean) => {
-    const sortedProjects = [...projects];
-    sortedProjects.sort((a, b) => {
-      const dateA = new Date(a.endDate).getTime();
-      const dateB = new Date(b.endDate).getTime();
-
-      if (asc) {
-        return dateA - dateB;
-      } else {
-        return dateB - dateA;
-      }
-    });
-
-    setProjects(sortedProjects);
-  };
-
-  useEffect(() => {
-    async function loadData() {
-      const data = await fetchProjects();
-      const projectData: Project[] = data as Project[];
-      // console.log("projectData", projectData);
-
-      if (projectData.length > 0) {
-        const projectStatusArray: ProjectStatus[] = await Promise.all(
-          projectData.map(async (item) => {
-            const status: Status = await fetchProjectStatusById(
-              item.projectStatusId
-            );
-            const projectStatus: ProjectStatus = {
-              id: item.id,
-              name: item.name,
-              description: item.description,
-              status: status,
-              startDate: item.startDate,
-              endDate: item.endDate,
-            };
-            return projectStatus;
-          })
-        );
-        setProjects(projectStatusArray);
-      }
-    }
-    loadData();
-  }, []);
-
-  const handleDelete = async (
-    event: MouseEvent<HTMLButtonElement>,
-    id: number
-  ) => {
-    try {
-      event.stopPropagation();
-      await deleteProject(id);
-      // Refresh the projects after deletion
-      const updatedProjects = await fetchProjects();
-
-      setProjects(updatedProjects);
-    } catch (error) {
-      console.error("Error deleting project:", error);
-    }
-  };
-
-  const handleButtonClick = (
-    event: MouseEvent<HTMLButtonElement>,
-    projectId: number
-  ) => {
-    event.stopPropagation();
-    navigate(`/edit/${projectId}`);
-  };
-
-  const handleProjectNameClick = (projectId: number) => {
-    navigate(`/taskView/${projectId}`);
-  };
-
+const Table: FC<TableProps> = ({ columns, data, actions, rowKey }) => {
   return (
     <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
       <table className="w-full text-sm text-left text-gray-500 ">
         <thead className="text-xs text-gray-700 uppercase bg-gray-100">
           <tr>
-            <th className="table-th">Name</th>
-            <th className="table-th">State</th>
-            <th className="table-th">Start Date</th>
-            <th className="table-th">
-              Deadline
-              <button className="ml-2" onClick={() => orderProjects(true)}>
-                <GrAscend />
-              </button>
-              <button className="ml-2" onClick={() => orderProjects(false)}>
-                <GrDescend />
-              </button>
-            </th>
-            <th className="table-th">Modify</th>
-            <th className="table-th">Delete</th>
+            {columns.map((col, index) => (
+              <th key={`${col.title + index}`} className="table-th">
+                {col.title}
+                {col?.sortCallback ? (
+                  <>
+                    <button
+                      className="ml-2"
+                      onClick={() => {
+                        col?.sortCallback && col?.sortCallback(true);
+                      }}
+                    >
+                      <GrAscend />
+                    </button>
+                    <button
+                      className="ml-2"
+                      onClick={() => {
+                        col?.sortCallback && col?.sortCallback(false);
+                      }}
+                    >
+                      <GrDescend />
+                    </button>
+                  </>
+                ) : null}
+              </th>
+            ))}
+            <th className="table-th">Actions</th>
           </tr>
         </thead>
         <tbody>
-          {projects.map((project) => (
+          {data.map((item) => (
             <tr
-              key={project.id}
-              className="bg-white border-b  hover:bg-gray-100"
-              onClick={() => handleProjectNameClick(project.id)}
+              key={item[rowKey]}
+              className="bg-white border-b  hover:bg-gray-100 hover:cursor-pointer"
+              onClick={() => actions.clickRowCallback(item[rowKey])}
             >
-              <td className="table-td text-gray-700">{project.name}</td>
-              <td className="table-td">{project.status.name}</td>
-              <td className="table-td">{project.startDate}</td>
-              <td className="table-td">{project.endDate}</td>
+              {columns.map((col, index) => {
+                if (index === 0) {
+                  return (
+                    <td
+                      key={index}
+                      className="table-td font-medium text-gray-700"
+                    >
+                      {item[col.prop]}
+                    </td>
+                  );
+                } else {
+                  return (
+                    <td key={index} className="table-td">
+                      {item[col.prop]}
+                    </td>
+                  );
+                }
+              })}
               <td className="table-td">
                 <button
-                  className="btn-primary"
-                  onClick={(e) => handleButtonClick(e, project.id)}
+                  className="font-medium text-blue-600 hover:underline"
+                  onClick={(e) => actions.modifyCallback(e, item[rowKey])}
                 >
                   Modify
                 </button>
-              </td>
-              <td className="table-td">
                 <button
-                  className="btn-primary"
-                  onClick={(e) => handleDelete(e, project.id)}
+                  className="font-medium text-red-600 hover:underline ml-2"
+                  onClick={(e) => actions.deleteCallback(e, item[rowKey])}
                 >
                   Delete
                 </button>
