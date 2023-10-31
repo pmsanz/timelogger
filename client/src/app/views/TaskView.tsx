@@ -2,12 +2,14 @@ import React, { useState, useEffect, FC } from "react";
 import { fetchTasksByProjectId } from ".././api/tasks";
 import { fetchProjectById } from ".././api/projects";
 import { fetchProjectStatusById } from ".././api/status";
-import { TaskList } from ".././components/TaskList";
 import { Task } from ".././types/task";
 import { Project } from ".././types/project";
 import { Status } from ".././types/status";
 import { useParams, useNavigate } from "react-router-dom";
-import "./TaskView.css";
+import Table from "../components/Table";
+import Card from "../components/Card";
+import { TableColumnType } from "../types/table-column";
+import { TableActionsType } from "../types/table-actions";
 
 const TaskView: FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -58,6 +60,35 @@ const TaskView: FC = () => {
     }
   }, [projectIdCasted]);
 
+  const columnsConfig: TableColumnType[] = [
+    {
+      title: "Task Name",
+      prop: "name",
+    },
+    {
+      title: "State",
+      prop: "taskStatusId",
+    },
+    {
+      title: `Start`,
+      prop: "startDate",
+    },
+    {
+      title: `Deadline`,
+      prop: "endDate",
+    },
+  ];
+
+  const actions: TableActionsType = {
+    clickRowCallback: () => {},
+    modifyCallback: () => {
+      console.log("modify");
+    },
+    deleteCallback: () => {
+      console.log("delete");
+    },
+  };
+
   if (loading) return <div>Loading...</div>;
 
   const CreateTask = () => (
@@ -79,26 +110,16 @@ const TaskView: FC = () => {
       {tasksItems.length < 1 ? (
         <CreateTask />
       ) : (
-        <div className="task-view">
-          <h1>
-            {project?.name} - Tasks - {status?.name}
-          </h1>
-          <div className="task-header">
-            <div>Task Name</div>
-            <div>State</div>
-            <div>Start date</div>
-            <div>Duration</div>
-            <div>Modify</div>
-            <div>Delete</div>
-          </div>
-          <TaskList tasks={tasksItems} />
-          <button
-            className="add"
-            onClick={() => handleButtonClick(project?.id)}
-          >
-            Create new task
-          </button>
-        </div>
+        <section className="container mx-auto flex flex-col justify-center items-center">
+          <Card title={`${project?.name} - Tasks - ${status?.name}`}>
+            <Table
+              columns={columnsConfig}
+              actions={actions}
+              rowKey={"id"}
+              data={tasksItems}
+            />
+          </Card>
+        </section>
       )}
     </div>
   );
